@@ -1,0 +1,98 @@
+Sub StockAnalysis()
+    Dim ws As Worksheet
+    ' Loop through each worksheet
+    For Each ws In Worksheets
+    
+    Dim LastRow As Double
+    Dim Ticker As String
+    Dim OpenPrice As Double
+    Dim ClosePrice As Double
+    Dim YearlyChange As Double
+    Dim PercentChange As Double
+    Dim TotalVolume As Double
+    Dim SummaryRow As Double
+    
+    
+        ' Initialize variables for each worksheet
+        YearlyChange = 0
+        TotalVolume = 0
+        SummaryRow = 2
+        
+        
+        'Add headers
+        ws.Cells(1, 9).Value = "Ticker"
+        ws.Cells(1, 10).Value = "Yearly Change"
+        ws.Cells(1, 11).Value = "Percent Change"
+        ws.Cells(1, 12).Value = "Total Stock Volume"
+        ws.Cells(1, 16).Value = "Ticker"
+        ws.Cells(1, 17).Value = "Value"
+        
+        ' Find the last row in the current worksheet
+        LastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+        OpenPrice = ws.Cells(2, 3).Value
+        
+        ' Loop through each row in the current worksheet
+        For i = 2 To LastRow
+        
+        If ws.Cells(i, 1).Value <> ws.Cells(i + 1, 1).Value Then
+        
+            Ticker = ws.Cells(i, 1).Value
+            ClosePrice = ws.Cells(i, 6).Value
+            
+            ' Check if it's the first row for the current ticker
+            If OpenPrice = 0 Then
+                OpenPrice = ws.Cells(i, 3).Value
+            End If
+            
+            ' Calculate YearlyChange, PercentChange, and TotalVolume
+            If OpenPrice <> 0 Then
+                YearlyChange = ClosePrice - OpenPrice
+                PercentChange = (YearlyChange / OpenPrice)
+            Else
+                ' Handle the case where OpenPrice is zero
+                PercentChange = 0
+            End If
+            
+            TotalVolume = TotalVolume + ws.Cells(i, 7).Value
+            
+            ' Output data to summary table
+            ws.Cells(SummaryRow, 9).Value = Ticker
+            ws.Cells(SummaryRow, 10).Value = YearlyChange
+            ws.Cells(SummaryRow, 11).Value = PercentChange
+            ws.Cells(SummaryRow, 11).NumberFormat = "0.00%"
+            ws.Cells(SummaryRow, 12).Value = TotalVolume
+            
+            ' Move to the next row in the summary table
+            SummaryRow = SummaryRow + 1
+            
+            ' Reset OpenPrice for the next ticker
+            OpenPrice = ws.Cells(i + 1, 3).Value
+            
+            TotalVolume = 0
+            
+            Else
+            TotalVolume = TotalVolume + ws.Cells(i, 7).Value
+            
+            End If
+            
+        Next i
+        
+        ' Find the greatest percent increase, greatest percent decrease, and greatest total volume
+        ws.Cells(2, 15).Value = "Greatest % Increase"
+        ws.Cells(3, 15).Value = "Greatest % Decrease"
+        ws.Cells(4, 15).Value = "Greatest Total Volume"
+        ws.Cells(1, 17).Value = WorksheetFunction.Max(ws.Range("K:K"))
+        ws.Cells(2, 17).Value = WorksheetFunction.Min(ws.Range("K:K"))
+        ws.Cells(3, 17).Value = WorksheetFunction.Max(ws.Range("L:L"))
+        
+        ws.Cells(1, 17).NumberFormat = "0.00%"
+        ws.Cells(2, 17).NumberFormat = "0.00%"
+        
+        ' Find the corresponding ticker symbols for the greatest change and output
+        ws.Cells(2, 16).Value = ws.Cells(Application.WorksheetFunction.Match(ws.Cells(2, 17).Value, ws.Range("K:K"), 0), 9)
+        ws.Cells(3, 16).Value = ws.Cells(Application.WorksheetFunction.Match(ws.Cells(3, 17).Value, ws.Range("K:K"), 0), 9)
+        ws.Cells(4, 16).Value = ws.Cells(Application.WorksheetFunction.Match(ws.Cells(4, 17).Value, ws.Range("L:L"), 0), 9)
+        
+     
+    Next ws
+End Sub
